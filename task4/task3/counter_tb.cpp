@@ -1,6 +1,4 @@
 #include "Vcounter.h"
-#include "Vtop.h"
-#include "Vbin2bcd.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include "vbuddy.cpp"
@@ -11,7 +9,7 @@ int main (int argc, char **argv, char **env){
 
     Verilated::commandArgs(argc, argv);
 
-    Vtop* top = new Vtop;
+    Vcounter* top = new Vcounter;
 
     Verilated::traceEverOn(true);
     VerilatedVcdC* tfp = new VerilatedVcdC;
@@ -20,14 +18,16 @@ int main (int argc, char **argv, char **env){
 
 
     if (vbdOpen() != 1) return(-1);
-    vbdHeader("xX_Pro_Counter_Xx");
+    vbdHeader("Lab 1: Counter");
+    
+    vbdSetMode(1);
 
     top->clk = 1;
     top->rst = 1;
-    top->bcd = 0;
+    top->ld = 0;
     top->v= 0;
 
-    for(i=0; i<300; i++) {
+    for(i=0; i<500; i++) {
 
         for(clk=0; clk<2; clk++){
             tfp->dump (2*i+clk);
@@ -35,16 +35,16 @@ int main (int argc, char **argv, char **env){
             top->eval ();
         }
         
-        vbdHex(4, (int(top->bcd) >> 16)& 0xF);
-        vbdHex(3, (int(top->bcd) >> 8)& 0xF);
-        vbdHex(2, (int(top->bcd) >> 4)& 0xF);
-        vbdHex(1, int(top->bcd)& 0xF);
+        vbdHex(4, (int(top->count) >> 16)& 0xF);
+        vbdHex(3, (int(top->count) >> 8)& 0xF);
+        vbdHex(2, (int(top->count) >> 4)& 0xF);
+        vbdHex(1, int(top->count)& 0xF);
         vbdCycle(i+1);
         
         //vbdPlot(int(top->count), 0, 255);
         
-        
         top->rst = (i<2) | (i == 15);
+        top->v = vbdValue();
         top->ld = vbdFlag();
         if (Verilated::gotFinish()) exit(0);
     }
@@ -52,4 +52,4 @@ int main (int argc, char **argv, char **env){
     vbdClose();
     tfp->close();
     exit(0); 
-}g
+}
