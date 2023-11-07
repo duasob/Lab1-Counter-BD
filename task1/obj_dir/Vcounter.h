@@ -1,56 +1,57 @@
 // Verilated -*- C++ -*-
-// DESCRIPTION: Verilator output: Primary model header
+// DESCRIPTION: Verilator output: Primary design header
 //
 // This header should be included by all source files instantiating the design.
 // The class here is then constructed to instantiate the design.
 // See the Verilator manual for examples.
 
-#ifndef VERILATED_VCOUNTER_H_
-#define VERILATED_VCOUNTER_H_  // guard
+#ifndef _VCOUNTER_H_
+#define _VCOUNTER_H_  // guard
 
 #include "verilated.h"
 
+//==========
+
 class Vcounter__Syms;
-class Vcounter___024root;
-class VerilatedVcdC;
+class Vcounter_VerilatedVcd;
 
-// This class is the main interface to the Verilated model
-class Vcounter VL_NOT_FINAL : public VerilatedModel {
-  private:
-    // Symbol table holding complete model state (owned by this class)
-    Vcounter__Syms* const vlSymsp;
 
+//----------
+
+VL_MODULE(Vcounter) {
   public:
-
+    
     // PORTS
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
-    VL_IN8(&clk,0,0);
-    VL_IN8(&rst,0,0);
-    VL_IN8(&en,0,0);
-    VL_OUT8(&count,7,0);
-
-    // CELLS
-    // Public to allow access to /* verilator public */ items.
-    // Otherwise the application code can consider these internals.
-
-    // Root instance pointer to allow access to model internals,
-    // including inlined /* verilator public_flat_* */ items.
-    Vcounter___024root* const rootp;
-
+    VL_IN8(clk,0,0);
+    VL_IN8(rst,0,0);
+    VL_IN8(en,0,0);
+    VL_OUT8(count,7,0);
+    
+    // LOCAL VARIABLES
+    // Internals; generally not touched by application code
+    CData/*0:0*/ __Vclklast__TOP__clk;
+    CData/*0:0*/ __Vclklast__TOP__rst;
+    CData/*0:0*/ __Vm_traceActivity[1];
+    
+    // INTERNAL VARIABLES
+    // Internals; generally not touched by application code
+    Vcounter__Syms* __VlSymsp;  // Symbol table
+    
     // CONSTRUCTORS
-    /// Construct the model; called by application code
-    /// If contextp is null, then the model will use the default global context
-    /// If name is "", then makes a wrapper with a
-    /// single model invisible with respect to DPI scope names.
-    explicit Vcounter(VerilatedContext* contextp, const char* name = "TOP");
-    explicit Vcounter(const char* name = "TOP");
-    /// Destroy the model; called (often implicitly) by application code
-    virtual ~Vcounter();
   private:
     VL_UNCOPYABLE(Vcounter);  ///< Copying not allowed
-
   public:
+    /// Construct the model; called by application code
+    /// The special name  may be used to make a wrapper with a
+    /// single model invisible with respect to DPI scope names.
+    Vcounter(const char* name = "TOP");
+    /// Destroy the model; called (often implicitly) by application code
+    ~Vcounter();
+    /// Trace signals in the model; called by application code
+    void trace(VerilatedVcdC* tfp, int levels, int options = 0);
+    
     // API METHODS
     /// Evaluate the model.  Application must call when inputs change.
     void eval() { eval_step(); }
@@ -61,16 +62,39 @@ class Vcounter VL_NOT_FINAL : public VerilatedModel {
     void eval_end_step() {}
     /// Simulation complete, run final blocks.  Application must call on completion.
     void final();
-    /// Trace signals in the model; called by application code
-    void trace(VerilatedVcdC* tfp, int levels, int options = 0);
-    /// Retrieve name of this model instance (as passed to constructor).
-    const char* name() const;
-
-    // Abstract methods from VerilatedModel
-    const char* hierName() const override final;
-    const char* modelName() const override final;
-    unsigned threads() const override final;
-    std::unique_ptr<VerilatedTraceConfig> traceConfig() const override final;
+    
+    // INTERNAL METHODS
+  private:
+    static void _eval_initial_loop(Vcounter__Syms* __restrict vlSymsp);
+  public:
+    void __Vconfigure(Vcounter__Syms* symsp, bool first);
+  private:
+    static QData _change_request(Vcounter__Syms* __restrict vlSymsp);
+    static QData _change_request_1(Vcounter__Syms* __restrict vlSymsp);
+    void _ctor_var_reset() VL_ATTR_COLD;
+  public:
+    static void _eval(Vcounter__Syms* __restrict vlSymsp);
+  private:
+#ifdef VL_DEBUG
+    void _eval_debug_assertions();
+#endif  // VL_DEBUG
+  public:
+    static void _eval_initial(Vcounter__Syms* __restrict vlSymsp) VL_ATTR_COLD;
+    static void _eval_settle(Vcounter__Syms* __restrict vlSymsp) VL_ATTR_COLD;
+    static void _sequent__TOP__1(Vcounter__Syms* __restrict vlSymsp);
+  private:
+    static void traceChgSub0(void* userp, VerilatedVcd* tracep);
+    static void traceChgTop0(void* userp, VerilatedVcd* tracep);
+    static void traceCleanup(void* userp, VerilatedVcd* /*unused*/);
+    static void traceFullSub0(void* userp, VerilatedVcd* tracep) VL_ATTR_COLD;
+    static void traceFullTop0(void* userp, VerilatedVcd* tracep) VL_ATTR_COLD;
+    static void traceInitSub0(void* userp, VerilatedVcd* tracep) VL_ATTR_COLD;
+    static void traceInitTop(void* userp, VerilatedVcd* tracep) VL_ATTR_COLD;
+    void traceRegister(VerilatedVcd* tracep) VL_ATTR_COLD;
+    static void traceInit(void* userp, VerilatedVcd* tracep, uint32_t code) VL_ATTR_COLD;
 } VL_ATTR_ALIGNED(VL_CACHE_LINE_BYTES);
+
+//----------
+
 
 #endif  // guard

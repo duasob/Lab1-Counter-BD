@@ -3,24 +3,21 @@
 
 #include "Vcounter__Syms.h"
 #include "Vcounter.h"
-#include "Vcounter___024root.h"
+
+
 
 // FUNCTIONS
-Vcounter__Syms::~Vcounter__Syms()
+Vcounter__Syms::Vcounter__Syms(Vcounter* topp, const char* namep)
+    // Setup locals
+    : __Vm_namep(namep)
+    , __Vm_activity(false)
+    , __Vm_baseCode(0)
+    , __Vm_didInit(false)
+    // Setup submodule names
 {
-}
-
-Vcounter__Syms::Vcounter__Syms(VerilatedContext* contextp, const char* namep, Vcounter* modelp)
-    : VerilatedSyms{contextp}
-    // Setup internal state of the Syms class
-    , __Vm_modelp{modelp}
-    // Setup module instances
-    , TOP{this, namep}
-{
-    // Configure time unit / time precision
-    _vm_contextp__->timeunit(-12);
-    _vm_contextp__->timeprecision(-12);
+    // Pointer to top level
+    TOPp = topp;
     // Setup each module's pointers to their submodules
     // Setup each module's pointer back to symbol table (for public functions)
-    TOP.__Vconfigure(true);
+    TOPp->__Vconfigure(this, true);
 }

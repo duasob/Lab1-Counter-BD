@@ -1,128 +1,118 @@
 // Verilated -*- C++ -*-
-// DESCRIPTION: Verilator output: Model implementation (design independent parts)
+// DESCRIPTION: Verilator output: Design implementation internals
+// See Vcounter.h for the primary calling header
 
 #include "Vcounter.h"
 #include "Vcounter__Syms.h"
-#include "verilated_vcd_c.h"
 
-//============================================================
-// Constructors
-
-Vcounter::Vcounter(VerilatedContext* _vcontextp__, const char* _vcname__)
-    : VerilatedModel{*_vcontextp__}
-    , vlSymsp{new Vcounter__Syms(contextp(), _vcname__, this)}
-    , clk{vlSymsp->TOP.clk}
-    , rst{vlSymsp->TOP.rst}
-    , en{vlSymsp->TOP.en}
-    , count{vlSymsp->TOP.count}
-    , rootp{&(vlSymsp->TOP)}
-{
-    // Register model with the context
-    contextp()->addModel(this);
-}
-
-Vcounter::Vcounter(const char* _vcname__)
-    : Vcounter(Verilated::threadContextp(), _vcname__)
-{
-}
-
-//============================================================
-// Destructor
-
-Vcounter::~Vcounter() {
-    delete vlSymsp;
-}
-
-//============================================================
-// Evaluation loop
-
-void Vcounter___024root___eval_initial(Vcounter___024root* vlSelf);
-void Vcounter___024root___eval_settle(Vcounter___024root* vlSelf);
-void Vcounter___024root___eval(Vcounter___024root* vlSelf);
-#ifdef VL_DEBUG
-void Vcounter___024root___eval_debug_assertions(Vcounter___024root* vlSelf);
-#endif  // VL_DEBUG
-void Vcounter___024root___final(Vcounter___024root* vlSelf);
-
-static void _eval_initial_loop(Vcounter__Syms* __restrict vlSymsp) {
-    vlSymsp->__Vm_didInit = true;
-    Vcounter___024root___eval_initial(&(vlSymsp->TOP));
-    // Evaluate till stable
-    vlSymsp->__Vm_activity = true;
-    do {
-        VL_DEBUG_IF(VL_DBG_MSGF("+ Initial loop\n"););
-        Vcounter___024root___eval_settle(&(vlSymsp->TOP));
-        Vcounter___024root___eval(&(vlSymsp->TOP));
-    } while (0);
-}
+//==========
 
 void Vcounter::eval_step() {
-    VL_DEBUG_IF(VL_DBG_MSGF("+++++TOP Evaluate Vcounter::eval_step\n"); );
+    VL_DEBUG_IF(VL_DBG_MSGF("+++++TOP Evaluate Vcounter::eval\n"); );
+    Vcounter__Syms* __restrict vlSymsp = this->__VlSymsp;  // Setup global symbol table
+    Vcounter* const __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
 #ifdef VL_DEBUG
     // Debug assertions
-    Vcounter___024root___eval_debug_assertions(&(vlSymsp->TOP));
+    _eval_debug_assertions();
 #endif  // VL_DEBUG
     // Initialize
     if (VL_UNLIKELY(!vlSymsp->__Vm_didInit)) _eval_initial_loop(vlSymsp);
     // Evaluate till stable
-    vlSymsp->__Vm_activity = true;
+    int __VclockLoop = 0;
+    QData __Vchange = 1;
     do {
         VL_DEBUG_IF(VL_DBG_MSGF("+ Clock loop\n"););
-        Vcounter___024root___eval(&(vlSymsp->TOP));
-    } while (0);
-    // Evaluate cleanup
+        vlSymsp->__Vm_activity = true;
+        _eval(vlSymsp);
+        if (VL_UNLIKELY(++__VclockLoop > 100)) {
+            // About to fail, so enable debug to see what's not settling.
+            // Note you must run make with OPT=-DVL_DEBUG for debug prints.
+            int __Vsaved_debug = Verilated::debug();
+            Verilated::debug(1);
+            __Vchange = _change_request(vlSymsp);
+            Verilated::debug(__Vsaved_debug);
+            VL_FATAL_MT("counter.sv", 1, "",
+                "Verilated model didn't converge\n"
+                "- See DIDNOTCONVERGE in the Verilator manual");
+        } else {
+            __Vchange = _change_request(vlSymsp);
+        }
+    } while (VL_UNLIKELY(__Vchange));
 }
 
-//============================================================
-// Utilities
-
-const char* Vcounter::name() const {
-    return vlSymsp->name();
+void Vcounter::_eval_initial_loop(Vcounter__Syms* __restrict vlSymsp) {
+    vlSymsp->__Vm_didInit = true;
+    _eval_initial(vlSymsp);
+    vlSymsp->__Vm_activity = true;
+    // Evaluate till stable
+    int __VclockLoop = 0;
+    QData __Vchange = 1;
+    do {
+        _eval_settle(vlSymsp);
+        _eval(vlSymsp);
+        if (VL_UNLIKELY(++__VclockLoop > 100)) {
+            // About to fail, so enable debug to see what's not settling.
+            // Note you must run make with OPT=-DVL_DEBUG for debug prints.
+            int __Vsaved_debug = Verilated::debug();
+            Verilated::debug(1);
+            __Vchange = _change_request(vlSymsp);
+            Verilated::debug(__Vsaved_debug);
+            VL_FATAL_MT("counter.sv", 1, "",
+                "Verilated model didn't DC converge\n"
+                "- See DIDNOTCONVERGE in the Verilator manual");
+        } else {
+            __Vchange = _change_request(vlSymsp);
+        }
+    } while (VL_UNLIKELY(__Vchange));
 }
 
-//============================================================
-// Invoke final blocks
-
-VL_ATTR_COLD void Vcounter::final() {
-    Vcounter___024root___final(&(vlSymsp->TOP));
+VL_INLINE_OPT void Vcounter::_sequent__TOP__1(Vcounter__Syms* __restrict vlSymsp) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    Vcounter::_sequent__TOP__1\n"); );
+    Vcounter* const __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
+    // Body
+    vlTOPp->count = ((IData)(vlTOPp->rst) ? 0U : (0xffU 
+                                                  & ((IData)(vlTOPp->count) 
+                                                     + (IData)(vlTOPp->en))));
 }
 
-//============================================================
-// Implementations of abstract methods from VerilatedModel
-
-const char* Vcounter::hierName() const { return vlSymsp->name(); }
-const char* Vcounter::modelName() const { return "Vcounter"; }
-unsigned Vcounter::threads() const { return 1; }
-std::unique_ptr<VerilatedTraceConfig> Vcounter::traceConfig() const {
-    return std::unique_ptr<VerilatedTraceConfig>{new VerilatedTraceConfig{false, false, false}};
-};
-
-//============================================================
-// Trace configuration
-
-void Vcounter___024root__trace_init_top(Vcounter___024root* vlSelf, VerilatedVcd* tracep);
-
-VL_ATTR_COLD static void trace_init(void* voidSelf, VerilatedVcd* tracep, uint32_t code) {
-    // Callback from tracep->open()
-    Vcounter___024root* const __restrict vlSelf VL_ATTR_UNUSED = static_cast<Vcounter___024root*>(voidSelf);
-    Vcounter__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    if (!vlSymsp->_vm_contextp__->calcUnusedSigs()) {
-        VL_FATAL_MT(__FILE__, __LINE__, __FILE__,
-            "Turning on wave traces requires Verilated::traceEverOn(true) call before time 0.");
+void Vcounter::_eval(Vcounter__Syms* __restrict vlSymsp) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    Vcounter::_eval\n"); );
+    Vcounter* const __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
+    // Body
+    if ((((IData)(vlTOPp->clk) & (~ (IData)(vlTOPp->__Vclklast__TOP__clk))) 
+         | ((IData)(vlTOPp->rst) & (~ (IData)(vlTOPp->__Vclklast__TOP__rst))))) {
+        vlTOPp->_sequent__TOP__1(vlSymsp);
     }
-    vlSymsp->__Vm_baseCode = code;
-    tracep->scopeEscape(' ');
-    tracep->pushNamePrefix(std::string{vlSymsp->name()} + ' ');
-    Vcounter___024root__trace_init_top(vlSelf, tracep);
-    tracep->popNamePrefix();
-    tracep->scopeEscape('.');
+    // Final
+    vlTOPp->__Vclklast__TOP__clk = vlTOPp->clk;
+    vlTOPp->__Vclklast__TOP__rst = vlTOPp->rst;
 }
 
-VL_ATTR_COLD void Vcounter___024root__trace_register(Vcounter___024root* vlSelf, VerilatedVcd* tracep);
-
-VL_ATTR_COLD void Vcounter::trace(VerilatedVcdC* tfp, int levels, int options) {
-    if (false && levels && options) {}  // Prevent unused
-    tfp->spTrace()->addModel(this);
-    tfp->spTrace()->addInitCb(&trace_init, &(vlSymsp->TOP));
-    Vcounter___024root__trace_register(&(vlSymsp->TOP), tfp->spTrace());
+VL_INLINE_OPT QData Vcounter::_change_request(Vcounter__Syms* __restrict vlSymsp) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    Vcounter::_change_request\n"); );
+    Vcounter* const __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
+    // Body
+    return (vlTOPp->_change_request_1(vlSymsp));
 }
+
+VL_INLINE_OPT QData Vcounter::_change_request_1(Vcounter__Syms* __restrict vlSymsp) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    Vcounter::_change_request_1\n"); );
+    Vcounter* const __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
+    // Body
+    // Change detection
+    QData __req = false;  // Logically a bool
+    return __req;
+}
+
+#ifdef VL_DEBUG
+void Vcounter::_eval_debug_assertions() {
+    VL_DEBUG_IF(VL_DBG_MSGF("+    Vcounter::_eval_debug_assertions\n"); );
+    // Body
+    if (VL_UNLIKELY((clk & 0xfeU))) {
+        Verilated::overWidthError("clk");}
+    if (VL_UNLIKELY((rst & 0xfeU))) {
+        Verilated::overWidthError("rst");}
+    if (VL_UNLIKELY((en & 0xfeU))) {
+        Verilated::overWidthError("en");}
+}
+#endif  // VL_DEBUG

@@ -4,36 +4,34 @@
 // Internal details; most calling programs do not need this header,
 // unless using verilator public meta comments.
 
-#ifndef VERILATED_VCOUNTER__SYMS_H_
-#define VERILATED_VCOUNTER__SYMS_H_  // guard
+#ifndef _VCOUNTER__SYMS_H_
+#define _VCOUNTER__SYMS_H_  // guard
 
 #include "verilated.h"
 
-// INCLUDE MODEL CLASS
-
+// INCLUDE MODULE CLASSES
 #include "Vcounter.h"
 
-// INCLUDE MODULE CLASSES
-#include "Vcounter___024root.h"
-
-// SYMS CLASS (contains all model state)
-class Vcounter__Syms final : public VerilatedSyms {
+// SYMS CLASS
+class Vcounter__Syms : public VerilatedSyms {
   public:
-    // INTERNAL STATE
-    Vcounter* const __Vm_modelp;
-    bool __Vm_activity = false;  ///< Used by trace routines to determine change occurred
-    uint32_t __Vm_baseCode = 0;  ///< Used by trace routines when tracing multiple models
-    bool __Vm_didInit = false;
-
-    // MODULE INSTANCE STATE
-    Vcounter___024root             TOP;
-
-    // CONSTRUCTORS
-    Vcounter__Syms(VerilatedContext* contextp, const char* namep, Vcounter* modelp);
-    ~Vcounter__Syms();
-
+    
+    // LOCAL STATE
+    const char* __Vm_namep;
+    bool __Vm_activity;  ///< Used by trace routines to determine change occurred
+    uint32_t __Vm_baseCode;  ///< Used by trace routines when tracing multiple models
+    bool __Vm_didInit;
+    
+    // SUBCELL STATE
+    Vcounter*                      TOPp;
+    
+    // CREATORS
+    Vcounter__Syms(Vcounter* topp, const char* namep);
+    ~Vcounter__Syms() {}
+    
     // METHODS
-    const char* name() { return TOP.name(); }
+    inline const char* name() { return __Vm_namep; }
+    
 } VL_ATTR_ALIGNED(VL_CACHE_LINE_BYTES);
 
 #endif  // guard
