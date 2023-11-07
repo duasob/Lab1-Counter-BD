@@ -11,7 +11,7 @@ module counter #(
 always_ff @ (posedge clk)
     if (rst) count <= {WIDTH{1'b0}};
     else  if (en)
-       count <= count + 1;
+       count <= count + 1;  // will count up if en == 1
     else    
-        count <= count -1;
+        count <= count -1; // will count down in en == 0
 endmodule
